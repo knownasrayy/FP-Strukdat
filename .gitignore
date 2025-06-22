@@ -21,7 +21,3 @@ build/
 
 # Backup files
 *~
-
-*.qodo
-*.dot
-*.png
