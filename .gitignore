@@ -2,7 +2,7 @@
 *.o
 
 # Binary hasil kompilasi
-a.out
+*a.out
 *.exe
 
 # Folder build (kalau pakai Makefile/CMake)
@@ -11,10 +11,10 @@ build/
 # Editor/OS cache
 *.log
 *.swp
-.DS_Store
+*.DS_Store
 
 # Windows file
-Zone.Identifier
+*Zone.Identifier
 
 # Temporary files
 *.tmp
@@ -22,6 +22,6 @@ Zone.Identifier
 # Backup files
 *~
 
-.qodo
-.dot
-.png
+*.qodo
+*.dot
+*.png
