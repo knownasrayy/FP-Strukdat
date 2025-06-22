@@ -1,0 +1,7 @@
+{
+    "weights": {
+        "distance": 0.4,
+        "time": 0.3,
+        "cost": 0.3
+    }
+}
