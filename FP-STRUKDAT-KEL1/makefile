@@ -17,7 +17,7 @@ TEST_SRCS = $(wildcard test/*.cpp)
 TEST_BINS = $(patsubst test/%.cpp,$(TEST_BIN_DIR)/%,$(TEST_SRCS))
 
 # Test flags
-TEST_LIBS = -lCatch2Main -lCatch2
+TEST_LIBS =
 
 # Default target
 all: $(TARGET)

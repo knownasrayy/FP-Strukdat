@@ -9,124 +9,151 @@
 #include "preference/preference.hpp"
 #include "utils/logger.hpp"
 #include <cstdlib> // Untuk system()
+#include <fstream>
+#include <nlohmann/json.hpp>
 
-void printPath(const Graph& graph, const std::vector<std::string>& path) {
-    std::cout << "\nRecommended Route:\n";
-    std::cout << "=================\n";
-    for (size_t i = 0; i < path.size(); ++i) {
-        const auto& vertex = graph.getVertex(path[i]);
-        std::cout << i + 1 << ". " << vertex.getId() << " ";
-        if (i < path.size() - 1) {
-            std::cout << "-> ";
-        }
-        if ((i + 1) % 5 == 0) std::cout << "\n";
+using namespace std;
+using json = nlohmann::json;
+
+void saveGraphToCSV(const Graph& graph, const string& locationFile, const string& routeFile) {
+    ofstream loc(locationFile);
+    loc << "id,x,y\n";
+    for (const auto& v : graph.getAllVertices()) {
+        loc << v.getId() << "," << v.getLatitude() << "," << v.getLongitude() << "\n";
     }
-    std::cout << "\n\n";
+    loc.close();
+    ofstream route(routeFile);
+    route << "from,to,distance,time,cost\n";
+    for (const auto& e : graph.getAllEdges()) {
+        route << e.getSource() << "," << e.getDestination() << "," << e.getDistance() << "," << e.getTime() << "," << e.getCost() << "\n";
+    }
+    route.close();
+    cout << "Graph berhasil disimpan ke data/location.csv dan data/route.csv\n";
 }
 
-void printPathDetails(const Graph& graph, const std::vector<std::string>& path) {
+void printPath(const Graph& graph, const vector<string>& path) {
+    cout << "\nRecommended Route:\n";
+    cout << "=================\n";
+    for (size_t i = 0; i < path.size(); ++i) {
+        const auto& vertex = graph.getVertex(path[i]);
+        cout << i + 1 << ". " << vertex.getId() << " ";
+        if (i < path.size() - 1) {
+            cout << "-> ";
+        }
+        if ((i + 1) % 5 == 0) cout << "\n";
+    }
+    cout << "\n\n";
+}
+
+void printPathDetails(const Graph& graph, const vector<string>& path) {
     double totalDistance = Dijkstra::getPathDistance(graph, path);
     double totalTime = Dijkstra::getPathTime(graph, path);
     double totalCost = Dijkstra::getPathCost(graph, path);
 
-    std::cout << "Path Details:\n";
-    std::cout << "============\n";
-    std::cout << "Total Distance: " << totalDistance << " km\n";
-    std::cout << "Total Time: " << totalTime << " minutes\n";
-    std::cout << "Total Cost: $" << totalCost << "\n\n";
+    cout << "Path Details:\n";
+    cout << "============\n";
+    cout << "Total Distance: " << totalDistance << " km\n";
+    cout << "Total Time: " << totalTime << " minutes\n";
+    cout << "Total Cost: $" << totalCost << "\n\n";
 }
 
 void addVertexMenu(Graph& graph) {
-    std::string id;
+    string id;
     double x, y;
-    std::cout << "Masukkan ID vertex (string): "; std::cin >> id;
-    std::cout << "Masukkan koordinat x: "; std::cin >> x;
-    std::cout << "Masukkan koordinat y: "; std::cin >> y;
+    cout << "Masukkan ID vertex (string): "; cin >> id;
+    cout << "Masukkan koordinat x: "; cin >> x;
+    cout << "Masukkan koordinat y: "; cin >> y;
     graph.addVertex(Vertex(id, x, y));
-    std::cout << "Vertex berhasil ditambahkan!\n";
+    cout << "Vertex berhasil ditambahkan!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void editVertexMenu(Graph& graph) {
-    std::string id;
-    std::cout << "Masukkan ID vertex yang ingin diubah: "; std::cin >> id;
+    string id;
+    cout << "Masukkan ID vertex yang ingin diubah: "; cin >> id;
     if (!graph.hasVertex(id)) {
-        std::cout << "Vertex tidak ditemukan!\n";
+        cout << "Vertex tidak ditemukan!\n";
         return;
     }
     double x, y;
-    std::cout << "Masukkan koordinat x baru: "; std::cin >> x;
-    std::cout << "Masukkan koordinat y baru: "; std::cin >> y;
+    cout << "Masukkan koordinat x baru: "; cin >> x;
+    cout << "Masukkan koordinat y baru: "; cin >> y;
     graph.removeVertex(id);
     graph.addVertex(Vertex(id, x, y));
-    std::cout << "Vertex berhasil diubah!\n";
+    cout << "Vertex berhasil diubah!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void deleteVertexMenu(Graph& graph) {
-    std::string id;
-    std::cout << "Masukkan ID vertex yang ingin dihapus: "; std::cin >> id;
+    string id;
+    cout << "Masukkan ID vertex yang ingin dihapus: "; cin >> id;
     if (!graph.hasVertex(id)) {
-        std::cout << "Vertex tidak ditemukan!\n";
+        cout << "Vertex tidak ditemukan!\n";
         return;
     }
     graph.removeVertex(id);
-    std::cout << "Vertex berhasil dihapus!\n";
+    cout << "Vertex berhasil dihapus!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void addEdgeMenu(Graph& graph) {
-    std::string from, to;
+    string from, to;
     double distance, time, cost;
-    std::cout << "Masukkan ID asal: "; std::cin >> from;
-    std::cout << "Masukkan ID tujuan: "; std::cin >> to;
-    std::cout << "Masukkan jarak: "; std::cin >> distance;
-    std::cout << "Masukkan waktu: "; std::cin >> time;
-    std::cout << "Masukkan biaya: "; std::cin >> cost;
+    cout << "Masukkan ID asal: "; cin >> from;
+    cout << "Masukkan ID tujuan: "; cin >> to;
+    cout << "Masukkan jarak: "; cin >> distance;
+    cout << "Masukkan waktu: "; cin >> time;
+    cout << "Masukkan biaya: "; cin >> cost;
     graph.addEdge(Edge(from, to, distance, time, cost));
-    std::cout << "Edge berhasil ditambahkan!\n";
+    cout << "Edge berhasil ditambahkan!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void editEdgeMenu(Graph& graph) {
-    std::string from, to;
-    std::cout << "Masukkan ID asal edge yang ingin diubah: "; std::cin >> from;
-    std::cout << "Masukkan ID tujuan edge yang ingin diubah: "; std::cin >> to;
+    string from, to;
+    cout << "Masukkan ID asal edge yang ingin diubah: "; cin >> from;
+    cout << "Masukkan ID tujuan edge yang ingin diubah: "; cin >> to;
     if (!graph.hasEdge(from, to)) {
-        std::cout << "Edge tidak ditemukan!\n";
+        cout << "Edge tidak ditemukan!\n";
         return;
     }
     graph.removeEdge(from, to);
     double distance, time, cost;
-    std::cout << "Masukkan jarak baru: "; std::cin >> distance;
-    std::cout << "Masukkan waktu baru: "; std::cin >> time;
-    std::cout << "Masukkan biaya baru: "; std::cin >> cost;
+    cout << "Masukkan jarak baru: "; cin >> distance;
+    cout << "Masukkan waktu baru: "; cin >> time;
+    cout << "Masukkan biaya baru: "; cin >> cost;
     graph.addEdge(Edge(from, to, distance, time, cost));
-    std::cout << "Edge berhasil diubah!\n";
+    cout << "Edge berhasil diubah!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void deleteEdgeMenu(Graph& graph) {
-    std::string from, to;
-    std::cout << "Masukkan ID asal edge yang ingin dihapus: "; std::cin >> from;
-    std::cout << "Masukkan ID tujuan edge yang ingin dihapus: "; std::cin >> to;
+    string from, to;
+    cout << "Masukkan ID asal edge yang ingin dihapus: "; cin >> from;
+    cout << "Masukkan ID tujuan edge yang ingin dihapus: "; cin >> to;
     if (!graph.hasEdge(from, to)) {
-        std::cout << "Edge tidak ditemukan!\n";
+        cout << "Edge tidak ditemukan!\n";
         return;
     }
     graph.removeEdge(from, to);
-    std::cout << "Edge berhasil dihapus!\n";
+    cout << "Edge berhasil dihapus!\n";
+    saveGraphToCSV(graph, "data/location.csv", "data/route.csv");
 }
 
 void showGraphMenu(const Graph& graph) {
-    std::cout << "\nDaftar Vertex:\n";
+    cout << "\nDaftar Vertex:\n";
     for (const auto& v : graph.getAllVertices()) {
-        std::cout << v.getId() << " (" << v.getLatitude() << ", " << v.getLongitude() << ")\n";
+        cout << v.getId() << " (" << v.getLatitude() << ", " << v.getLongitude() << ")\n";
     }
-    std::cout << "\nDaftar Edge:\n";
+    cout << "\nDaftar Edge:\n";
     for (const auto& e : graph.getAllEdges()) {
-        std::cout << e.getSource() << " -> " << e.getDestination()
+        cout << e.getSource() << " -> " << e.getDestination()
                   << " | Jarak: " << e.getDistance() << " | Waktu: " << e.getTime() << " | Biaya: " << e.getCost() << "\n";
     }
 }
 
-void exportGraphToDOT(const Graph& graph, const std::string& filename) {
-    std::ofstream ofs(filename);
+void exportGraphToDOT(const Graph& graph, const string& filename) {
+    ofstream ofs(filename);
     ofs << "digraph G {\n";
     // Vertex
     for (const auto& v : graph.getAllVertices()) {
@@ -140,25 +167,36 @@ void exportGraphToDOT(const Graph& graph, const std::string& filename) {
 }
 
 void visualizeGraph(const Graph& graph) {
-    const std::string dotFile = "graphviz_output.dot";
-    const std::string pngFile = "graphviz_output.png";
+    const string dotFile = "graphviz_output.dot";
+    const string pngFile = "graphviz_output.png";
     exportGraphToDOT(graph, dotFile);
     // Jalankan Graphviz
-    std::string cmd = "dot -Tpng " + dotFile + " -o " + pngFile;
-    int res = std::system(cmd.c_str());
+    string cmd = "dot -Tpng " + dotFile + " -o " + pngFile;
+    int res = system(cmd.c_str());
     if (res == 0) {
-        std::cout << "Graph image generated: " << pngFile << "\n";
+        cout << "Graph image generated: " << pngFile << "\n";
         // Coba buka gambar (Linux: xdg-open, Windows: start, Mac: open)
         #ifdef __linux__
-        std::system(("xdg-open " + pngFile + " &").c_str());
+        system(("xdg-open " + pngFile + " &").c_str());
         #elif _WIN32
-        std::system(("start " + pngFile).c_str());
+        system(("start " + pngFile).c_str());
         #elif __APPLE__
-        std::system(("open " + pngFile).c_str());
+        system(("open " + pngFile).c_str());
         #endif
     } else {
-        std::cout << "Gagal menjalankan Graphviz. Pastikan 'dot' sudah terinstall.\n";
+        cout << "Gagal menjalankan Graphviz. Pastikan 'dot' sudah terinstall.\n";
     }
+}
+
+void savePreferenceToJSON(const Preference& preferences, const string& filename) {
+    json j;
+    j["weights"]["distance"] = preferences.getDistanceWeight();
+    j["weights"]["time"] = preferences.getTimeWeight();
+    j["weights"]["cost"] = preferences.getCostWeight();
+    ofstream ofs(filename);
+    ofs << j.dump(4);
+    ofs.close();
+    cout << "Preferensi berhasil disimpan ke " << filename << "\n";
 }
 
 int main() {
@@ -167,7 +205,7 @@ int main() {
         Logger::info("Application started");
 
         // Load graph data
-        std::cout << "Loading graph data...\n";
+        cout << "Loading graph data...\n";
         Graph graph = CSVHandler::loadGraphFromCSV(
             "data/location.csv",
             "data/route.csv"
@@ -175,7 +213,7 @@ int main() {
         Logger::info("Graph data loaded successfully");
 
         // Load user preferences
-        std::cout << "Loading user preferences...\n";
+        cout << "Loading user preferences...\n";
         Preference preferences = JSONHandler::loadPreferencesFromJSON(
             "data/preference.json"
         );
@@ -186,19 +224,19 @@ int main() {
             // CRUD menu
             int menu = -1;
             do {
-                std::cout << "\n==== MENU CRUD GRAPH ====\n";
-                std::cout << "1. Tampilkan graph\n";
-                std::cout << "2. Tambah vertex\n";
-                std::cout << "3. Ubah vertex\n";
-                std::cout << "4. Hapus vertex\n";
-                std::cout << "5. Tambah edge\n";
-                std::cout << "6. Ubah edge\n";
-                std::cout << "7. Hapus edge\n";
-                std::cout << "8. Lanjut ke pencarian rute\n";
-                std::cout << "9. Visualisasikan graph\n";
-                std::cout << "0. Keluar\n";
-                std::cout << "Pilih menu: ";
-                std::cin >> menu;
+                cout << "\n==== MENU CRUD GRAPH ====\n";
+                cout << "1. Tampilkan graph\n";
+                cout << "2. Tambah vertex\n";
+                cout << "3. Ubah vertex\n";
+                cout << "4. Hapus vertex\n";
+                cout << "5. Tambah edge\n";
+                cout << "6. Ubah edge\n";
+                cout << "7. Hapus edge\n";
+                cout << "8. Lanjut ke pencarian rute\n";
+                cout << "9. Visualisasikan graph\n";
+                cout << "0. Keluar\n";
+                cout << "Pilih menu: ";
+                cin >> menu;
                 switch(menu) {
                     case 1: showGraphMenu(graph); break;
                     case 2: addVertexMenu(graph); break;
@@ -209,57 +247,95 @@ int main() {
                     case 7: deleteEdgeMenu(graph); break;
                     case 8: break;
                     case 9: visualizeGraph(graph); break;
-                    case 0: std::cout << "Keluar aplikasi.\n"; return 0;
-                    default: std::cout << "Menu tidak valid!\n";
+                    case 0: cout << "Keluar aplikasi.\n"; return 0;
+                    default: cout << "Menu tidak valid!\n";
                 }
             } while(menu != 8);
 
-            // Get user input
-            std::string start, goal;
-            std::cout << "\nAvailable locations:\n";
-            for (const auto& vertex : graph.getAllVertices()) {
-                std::cout << vertex.getId() << " ";
+            // Input preferensi user
+            double wDist, wTime, wCost;
+            while (true) {
+                cout << "\nMasukkan preferensi anda (total harus 1.0):\n";
+                cout << "Bobot jarak   (0-1): "; cin >> wDist;
+                cout << "Bobot waktu   (0-1): "; cin >> wTime;
+                cout << "Bobot biaya   (0-1): "; cin >> wCost;
+                if (cin.fail() || wDist < 0 || wDist > 1 || wTime < 0 || wTime > 1 || wCost < 0 || wCost > 1) {
+                    cout << "Input tidak valid! Masukkan angka antara 0 dan 1.\n";
+                    cin.clear(); cin.ignore(1000, '\n');
+                    continue;
+                }
+                if (abs(wDist + wTime + wCost - 1.0) > 1e-6) {
+                    cout << "Total bobot harus 1.0! Ulangi input.\n";
+                    continue;
+                }
+                break;
             }
-            std::cout << "\n\nEnter start location: ";
-            std::cin >> start;
-            std::cout << "Enter destination: ";
-            std::cin >> goal;
+            preferences.setDistanceWeight(wDist);
+            preferences.setTimeWeight(wTime);
+            preferences.setCostWeight(wCost);
+            savePreferenceToJSON(preferences, "data/preference.json");
+
+            // Get user input lokasi
+            string start, goal;
+            while (true) {
+                cout << "\nAvailable locations:\n";
+                for (const auto& vertex : graph.getAllVertices()) {
+                    cout << vertex.getId() << " ";
+                }
+                cout << "\n\nEnter start location: ";
+                cin >> start;
+                cout << "Enter destination: ";
+                cin >> goal;
+                if (!graph.hasVertex(start) || !graph.hasVertex(goal)) {
+                    cout << "Lokasi tidak ditemukan! Ulangi input.\n";
+                    continue;
+                }
+                if (start == goal) {
+                    cout << "Lokasi asal dan tujuan tidak boleh sama!\n";
+                    continue;
+                }
+                break;
+            }
 
             // Find path using both algorithms
-            std::cout << "\nFinding optimal route...\n";
-
-            // Using Dijkstra's algorithm
-            std::vector<std::string> dijkstraPath = Dijkstra::findShortestPath(
-                graph, start, goal, preferences
-            );
-            std::cout << "\nDijkstra's Algorithm Result:\n";
-            printPath(graph, dijkstraPath);
-            printPathDetails(graph, dijkstraPath);
-
-            // Using A* algorithm
-            std::vector<std::string> aStarPath = AStar::findPath(
-                graph, start, goal
-            );
-            std::cout << "\nA* Algorithm Result:\n";
-            printPath(graph, aStarPath);
-            printPathDetails(graph, aStarPath);
-
-            // Compare results
-            if (dijkstraPath == aStarPath) {
-                std::cout << "Both algorithms found the same optimal path!\n";
-            } else {
-                std::cout << "Algorithms found different paths. "
+            cout << "\nFinding optimal route...\n";
+            vector<string> dijkstraPath, aStarPath;
+            try {
+                dijkstraPath = Dijkstra::findShortestPath(
+                    graph, start, goal, preferences
+                );
+                cout << "\nDijkstra's Algorithm Result:\n";
+                printPath(graph, dijkstraPath);
+                printPathDetails(graph, dijkstraPath);
+            } catch (const exception& e) {
+                cout << "Error Dijkstra: " << e.what() << "\n";
+            }
+            try {
+                aStarPath = AStar::findPath(
+                    graph, start, goal
+                );
+                cout << "\nA* Algorithm Result:\n";
+                printPath(graph, aStarPath);
+                printPathDetails(graph, aStarPath);
+            } catch (const exception& e) {
+                cout << "Error A*: " << e.what() << "\n";
+            }
+            if (!dijkstraPath.empty() && !aStarPath.empty()) {
+                if (dijkstraPath == aStarPath) {
+                    cout << "Both algorithms found the same optimal path!\n";
+                } else {
+                    cout << "Algorithms found different paths. "
                          << "This might be due to different heuristics "
                          << "or weighting strategies.\n";
+                }
             }
-
             Logger::info("Path finding completed successfully");
             // Kembali ke menu utama
         }
 
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        Logger::error(std::string("Application error: ") + e.what());
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+        Logger::error(string("Application error: ") + e.what());
         return 1;
     }
 }
