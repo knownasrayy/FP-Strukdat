@@ -1,0 +1,27 @@
+# File objek
+*.o
+
+# Binary hasil kompilasi
+a.out
+*.exe
+
+# Folder build (kalau pakai Makefile/CMake)
+build/
+
+# Editor/OS cache
+*.log
+*.swp
+.DS_Store
+
+# Windows file
+Zone.Identifier
+
+# Temporary files
+*.tmp
+
+# Backup files
+*~
+
+.qodo
+.dot
+.png
