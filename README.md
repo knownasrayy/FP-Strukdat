@@ -1,4 +1,4 @@
-# Final Project Struktur Data - Kelompok 1
+# Final Project Struktur Data - Kelompok 2
 
 ## Nama Kelompok:
 
